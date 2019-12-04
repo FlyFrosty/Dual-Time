@@ -1,222 +1,248 @@
-import document from "document";
 import clock from "clock";
+import document from "document";
+
 import * as messaging from "messaging";
-import * as util from "../common/utils";
 import * as fs from "fs";
+import * as util from "../common/util";
 
-import { inbox } from "file-transfer";
-import { today } from 'user-activity';
 import { preferences } from "user-settings";
-
-import { me } from "appbit";
 import { display } from "display";
-import { battery } from "power";
+import { today } from 'user-activity';
 
 import {me as device} from "device";
 
-
-let myColor = document.getElementById("myColor");
-
-// Main Clock elements
-let mainTime = document.getElementById("mainTime");
-let time = document.getElementById("time");
-let timeShadow = document.getElementById("timeShadow");
+let time1 = document.getElementById("time1");
+let time1Shadow = document.getElementById("time1Shadow");
+let time2 = document.getElementById("time2");
+let time2Shadow = document.getElementById("time2Shadow");
+let myTZ = document.getElementById("myTZ");
 let ampm = document.getElementById("ampm");
 let ampmShadow = document.getElementById("ampmShadow");
-let myTZShadow = document.getElementById("myTZShadaow");
-let myTZ = document.getElementById("myTZ");
-
-//Zulu Clock Elements
-let myUTCTime = document.getElementById("myUTCTime");
-let myUTCLabel = document.getElementById("myUTCLabel");
-let myUTCLabelShadow = document.getElementById("myUTCLabelShadow");
-let myZShadow = document.getElementById("myZShadow");
-let myZ = document.getElementById("myZ");
-let lowerAMPMShadow = document.getElementById("lowerAMPMShadow");
-let lowerAMPM = document.getElementById("lowerAMPM");
-
-//Calendaer elements
-let allCal = document.getElementById("allCal");
+let ampm2 = document.getElementById("ampm2");
+let ampm2Shadow = document.getElementById("ampm2Shadow");
+let TZ2 = document.getElementById("TZ2");
 let myCal = document.getElementById("myCal");
-let myCalShadow = document.getElementById("myCalShadow");
-
-//Step Count elements
-let allFeet = document.getElementById("allFeet");
-let mySteps = document.getElementById("mySteps");
-let myStepsShadow = document.getElementById("myStepsShadow");
-let myFeet = document.getElementById("myFeet");
-let myFeetShadow = document.getElementById("myFeetShadow");
-
-//Fitness Fill Elements
-let allAct = document.getElementById("allAct");
-let myAct = document.getElementById("myAct");
-let myActShadow = document.getElementById("myActShadow");
-let myActPic = document.getElementById("myActPic");
-let myActPicShadow = document.getElementById("myActPicShadow");
-
-let allBurn = document.getElementById("allBurn");
-let myBurn = document.getElementById("myBurn");
-let myBurnShadow = document.getElementById("myBurnShadow");
-let myBurnPic = document.getElementById("myBurnPic");
-let myBurnPicShadow = document.getElementById("myBurnPicShadow");
-
-let allFitID = document.getElementById("allFitID");
-let fitID = document.getElementById("fitID");
-let fitIDShadow = document.getElementById("fitIDShadow");
-
-//Batery fill elements
-let batShell = document.getElementById("batShell");
-let batt = document.getElementById("batt");
-
-let batBody = document.getElementById("batBody");
-let batFill = document.getElementById("batFill");
-let batFillWidth = batBody.width - 4;
-
-const SETTINGS_FILE = "settings.cbor";
-const SETTINGS_TYPE = "cbor";
-
 const imageBackground = document.getElementById("imageBackground");
+let mySteps = document.getElementById("mySteps");
+let myFeet = document.getElementById("myFeet");
 
-let mySettings = {};
-  
-let myOptions= {timeOrFit: "false",
-                OffsetTime: 25,
-                batDisp: false,
-                color: "white",
-                loadZone: "UNK",
-                whatTime: "false",
-                myScreen: device.modelName
-               };
 
-console.log(`myScreen device type is <${myOptions.myScreen}>`);
+let loadColor;
+let loadOffset;
+let loadZone = "   "; 
+let whatTime;
 
+
+imageBackground.href = "brushed.jpeg";
+mySteps.style.display = "none";
+loadInfo();//Reads info from file
+
+// Update the clock every minute
 clock.granularity = "minutes";
 
-//loads background image only
-loadSettings();
-
-//See if there are saved settings
-loadInfo(myOptions);
-
-//clear the clutter
-resetToClock(myOptions);
-
-
-//produces clock face called by loadInfo
-function updateAll(myOptions) {
-//  loadSettings(); //this is the background image load
-  mainClock(myOptions);
-  myFormCal();
-  updateBat(myOptions);
-  console.log(`myOptions.timeOrFit <${myOptions.timeOrFit}>`);
-
-  //Clear everything except steps or second time  
-  allBurn.style.display = "none";
-  allAct.style.display = "none";
-  allFitID.style.display = "none";
+function loadInfo() {
   
-  if (myOptions.timeOrFit === "true") {
-    console.log("updateAll to updateFitness");
-    myUTCTime.style.display = "none";
-    resetToSteps();
-  } else {
-    console.log("updateAll then utcClock");
-    allFeet.style.display = "none";
-    resetToClock(myOptions);
-    console.log(`Sent to utcClock with time <${myOptions.OffsetTime}>`);
+  try {
+    loadColor = fs.readFileSync("myColor.txt","ascii");
+
+    if (loadColor !== undefined) {
+      time1.style.fill = loadColor;
+      time2.style.fill = loadColor;
+      ampm.style.fill = loadColor;
+      ampm2.style.fill = loadColor;
+    }
+ } catch (error) {
+     console.log("loadColor error" + error);
+   if (error == "Error: Couldn't find file: myColor.txt") {
+     console.log("handled");
+   } else {
+     if (loadColor !== undefined) {
+     //on first run-through there are still quotes on the color
+     loadColor = util.myColor(loadColor);
+     console.log("Refine loadColor <" + loadColor + ">");
+     time1.style.fill = loadColor;
+     time2.style.fill = loadColor;
+     ampm.style.fill = loadColor;
+     ampm2.style.fill = loadColor;  
+     } else {
+       loadColor = "blue";
+     }
+   }
+ }
+  try {
+    loadOffset = fs.readFileSync("offsetTime.txt","ascii");
+    
+    if (loadOffset !== undefined) {
+      console.log(`new Offset: <${loadOffset}>`);
+    } else if (loadOffset === undefined) {
+      loadOffset = 0;
+    }  
+  } catch (error) {
+    console.log("No pre-set offset" + error);
+    loadOffset = 0;
+    
   }
+  try {
+    loadZone = fs.readFileSync("zoneCode.txt","ascii");
+    
+    if (loadZone !== undefined) {
+      console.log(`new Timezone: <${loadZone}>`);
+      myTZ.text = loadZone;
+    }
+  } catch (error) {
+    console.log("No pre-set timezone" + error);
+    myTZ.text = "   ";
+  }
+  
+  try {
+    whatTime = fs.readFileSync("whatTime.txt","ascii");
+    
+    if (whatTime !== undefined) {
+      console.log(`new whatTime: <${whatTime}>`);
+    }
+  } catch (error) {
+    console.log("whatTime not read, assigned system");
+    if (preferences.clockDisplay === "24h"){
+      whatTime = "false";
+    } else {
+      whatTime = "true";
+    }
+  }
+  loadScreen(loadColor, loadOffset, loadZone, whatTime);  //Puts info on watch
 }
 
-function mainClock(myOptions) {
+
+messaging.peerSocket.onmessage = function (evt) {
+
+  console.log(`onmessage key = <${evt.data.key}>`);
+  console.log(`onmsg info = <${evt.data.newValue}>`);
+      
+  switch (evt.data.key) {
+    case 'color':
+      let newInfo = util.myColor(evt.data.newValue);
+      fs.writeFileSync("myColor.txt",newInfo,"ascii");
+      console.log(`myColor file written <${newInfo}>`);
+      break;
+    case 'offsetTime':     
+      let myTemp = JSON.parse(evt.data.newValue);
+      let newInfo = myTemp.values[0].value;
+      fs.writeFileSync("offsetTime.txt",newInfo,"ascii");
+      console.log(`offsetTime file written <${newInfo}>`);
+      break;
+    case 'zoneCode':
+      let newInfo = evt.data.newValue;
+      fs.writeFileSync("zoneCode.txt", newInfo, "ascii");
+      console.log(`zoneCode written <${newInfo}>`);
+      break;
+    case 'whatTime':
+      let newInfo = evt.data.newValue;
+      fs.writeFileSync("whatTime.txt", newInfo, "ascii");
+      console.log(`whatTime written ,${newInfo}>`);
+      break;
+  }
+  loadInfo(); //Loads info from file
+ }
+  
+
+messaging.peerSocket.onopen = function (evt) {
+  console.log("App socket open");
+} 
+
+messaging.peerSocket.onclose = function (evt) {
+  console.log("App socket closed");
+}
+
+
+// Update the text element in resources/index.gui of MyLabel with the current time
+function mainClock(loadZone, whatTime) {  
 
   let today = new Date();
   let hours = today.getHours();
   let mins = util.zeroPad(today.getMinutes());
-
-  console.log(`hours ${hours}`);
-  console.log(`prefs T ${myOptions.whatTime}`);
+  let myAMPM;
+  let timeZone = util.stripQuotes(loadZone);
+  let myDevice = device.modelName;
+  let bboxTime;
   
-  //Force a new timeZone from the companion
   //Force a new timeZone from the companion
   if (Date.now() % 900000 < 100) {
     if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
       messaging.peerSocket.send("event");
     } else {
-      timeZone = "Unknown";
+      timeZone = "   ";
     }
-  } else {
-    console.log("don't do it"); 
   }
+  console.log(`Watch date = ${today}`);
+  myTZ.text = timeZone;
   
-  if (myOptions.whatTime === "true") {
-    ampm.text = util.MyAmpm(hours);
-    ampmShadow.text = util.MyAmpm(hours);
-    if (hours > 12) {
-      hours = hours - 12;
-    }
-    ampm.style.display = "inline";
-    ampmShadow.style.display = "inline";
-    if (hours > 9) {
-      if (myOptions.myScreen = "Ionic") {
-        time.style.fontSize = 90;
-        timeShadow.style.fontSize = 90;        
-      } else if (myOptions.myScreen = "Versa") {
-        time.style.fontSize = 80;
-        timeShadow.style.fontSize = 90;
-      } else {
-        time.style.fontSize = 100;
-        timeShadow.style.fontSize = 100;        
-      }
-    }
-    timeShadow.text = `${hours}:${mins}`;
-    time.text = `${hours}:${mins}`;
-    let bboxTime = time.getBBox().right;
-    console.log(`bbox width information <${bboxTime}>`);
-    ampm.x = bboxTime + 5;
-    ampmShadow.x = bboxTime + 7;
-  } else {
+  
+  if (whatTime === "false") {
+    time1.style.fontSize = 100;
+    time1Shadow.style.fontSize = 100;
     ampm.style.display = "none";
     ampmShadow.style.display = "none";
-    hours = util.zeroPad(today.getHours());
-    timeShadow.text = `${hours}:${mins}`;
-    time.text = `${hours}:${mins}`;
-  };
-
-};
-
-function formatDate(date) {
-   var monthNames = [
-    "Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-   var dayNames = [
-    "Sun", "Mon", "Tues", "Weds", "Thurs", "Fri", "Sat"
-  ];  
-  var day = date.getDate();
-  var monthIndex = date.getMonth();
-  var year = date.getFullYear();
-  var todayIndex = date.getDay();
-  
-  lowerAMPMShadow.style.display = "none";
-  lowerAMPM.style.display = "none";
-  
-  return dayNames[todayIndex] + ', ' + day + ' ' + monthNames[monthIndex];
+    console.log(`prefs1 ${whatTime}`);
+    hours = util.zeroPad(hours);
+    time1.text = `${hours}:${mins}`;
+    time1Shadow.text = `${hours}:${mins}`;
+  } else {
+    console.log(`hours before correction ${hours}`);
+    ampm.style.display = "inline";
+    ampmShadow.style.display = "inline";
+    console.log(`pref2 ${whatTime}`);
+    if (hours > 12) {
+      hours = hours - 12;
+      myAMPM = "PM";
+    } else if (hours === 12) {
+      myAMPM = "PM";
+    } else if (hours === 0) {
+      myAMPM = "AM";
+    } else {
+      myAMPM = "AM";
+    }
+    
+    if (hours < 10) {
+      if (myDevice = "Ionic") {
+        time1.style.fontSize = 100;
+        time1Shadow.style.fontSize = 100;
+      } else {
+        time1.style.fontSize = 95;
+        time1Shadow.style.fontSize = 95;
+      }
+    } else {
+      if (myDevice.com === "Ionic") {
+        time1.style.fontSize = 100;
+        time1Shadow.style.fontSize = 100;
+      } else {
+        time1.style.fontSize = 85;
+        time1Shadow.style.fontSize = 85;      
+      }
+    }    
+    time1.text = `${hours}:${mins}`;
+    time1Shadow.text = `${hours}:${mins}`;
+    bboxTime = time1.getBBox().right;
+    ampm.x = bboxTime + 5;
+    ampmShadow.x = bboxTime + 7;
+    ampm.text = `${myAMPM}`;
+    ampmShadow.text = `${myAMPM}`;
+  } 
 }
 
-// Uses formatDate function to display my date
-function myFormCal()  {
-  myCal.text = `${formatDate(new Date())}`;
-  myCalShadow.text = `${formatDate(new Date())}`;
-}  
-
-
 //Update the text element of myUTCLabel with UTC Time
-function utcClock(myOptions) {
+function offsetClock(loadOffset, whatTime) {
+  
   let today = new Date(); 
-  let mins = util.zeroPad(today.getMinutes()); 
+  let mins = today.getMinutes();
   let UTCHours = today.getUTCHours(); 
-  let myAMPM;
-   
-  let offsetHours = parseInt(myOptions.OffsetTime);
+  let myAMPM;  
+  let offsetHours = Number(loadOffset);
+  let myDevice = device.modelName;
+  
+  let bboxTime;
+  let halfCheck = 0;
+  
+  console.log(`loadOffset read <${loadOffset}>`);
+  console.log(`offsetHours Before <${offsetHours}>`);
   
   if (offsetHours === 25) {
     offsetHours = 0;
@@ -225,6 +251,29 @@ function utcClock(myOptions) {
   console.log(`UTC Hours <${UTCHours}>`);
   console.log(`offsetHours <${offsetHours}>`);
 
+  if (offsetHours === 5.5 || offsetHours === 4.5 || offsetHours === 9.5 || offsetHours === 3.5) {
+    halfCheck = 30;
+    console.log("loadOffset ends in 5");
+  } else {
+    halfCheck = 0;
+    console.log("loadOffset ends in 0");
+  }
+   
+  offsetHours = parseInt(offsetHours);
+  console.log(`offsetHours parseInt <${offsetHours}>`);
+  let myDisp = offsetHours;
+  
+  if (halfCheck === 30) {
+    if (mins < 30) {
+      mins = mins + halfCheck;
+    } else {
+      mins = mins - halfCheck;
+      offsetHours = offsetHours + 1;
+    }
+  }
+  
+  mins = util.zeroPad(mins);
+  
   let addedHours = offsetHours + UTCHours; //this will be the display hours variable
   console.log(`addedHours before <${addedHours}>`);
   
@@ -236,13 +285,22 @@ function utcClock(myOptions) {
 
   console.log(`addedHours after <${addedHours}>`);
   
-  if (myOptions.whatTime === "false") {
-    lowerAMPM.style.display = "none";
-    lowerAMPMShadow.style.display = "none";
+  if (whatTime === "false") {
+    ampm2.style.display = "none";
+    ampm2Shadow.style.display = "none";
     addedHours = util.zeroPad(addedHours);
-    myUTCLabel.text = `${addedHours}:${mins}`;
-    myUTCLabelShadow.text = `${addedHours}:${mins}`;
+    if (myDevice = "Ionic") {
+      time2.style.fontSize = 70;
+      time2Shadow.style.fontSize = 70;
+    } else {
+      time2.style.fontSize = 60;
+      time2Shadow.style.fontSize = 60;
+    }
+    time2.text = `${addedHours}:${mins}`;
+    time2Shadow.text = `${addedHours}:${mins}`;
   } else {
+    ampm2.style.display = "inline";
+    ampm2Shadow.style.display = "inline";
     if (addedHours > 12) {
       myAMPM = "PM";
       addedHours = addedHours - 12;
@@ -255,323 +313,83 @@ function utcClock(myOptions) {
     } else {
       console.log("myAMPM is undefined");
     }
-    lowerAMPM.text = `${myAMPM}`;
-    lowerAMPMShadow.text = `${myAMPM}`;
-    let bboxTime = myUTCLabel.getBBox().right;
-    console.log(`bbox width information <${bboxTime}>`);
-    lowerAMPM.x = bboxTime + 5;
-    lowerAMPMShadow.x = bboxTime + 7;
-    lowerAMPMShadow.style.display = "inline";
-    lowerAMPM.style.display = "inline";
-    myUTCLabel.text = `${addedHours}:${mins}`;
-    myUTCLabelShadow.text = `${addedHours}:${mins}`;
-  }
-  
-  if (offsetHours > 0) {
-    myZ.text = `GMT +${offsetHours} Selected`;
-    myZShadow.text = `GMT +${offsetHours} Selected`;
-  } else if (offsetHours < 0) {
-    myZ.text = `GMT ${offsetHours} Selected`;
-    myZShadow.text = `GMT ${offsetHours} Selected`;
-  } else if (offsetHours === 0) {
-    myZ.text = `GMT Selected`;
-    myZShadow.text = `GMT Selected`;
-  } else {
-    console.log("GMT undefined");
-  }   
+    
+    if (addedHours >9) {
+      if (myDevice = "Ionic") {
+        time2.style.fontSize = 70;
+        time2Shadow.style.fontSize = 70;
+      } else {
+        time2.style.fontSize = 60;
+        time2Shadow.style.fontSize = 60;      
+      }
+    } else {
+        time2.style.fontSize = 70;
+        time2Shadow.style.fontSize = 70;      
+      }      
+    }
+    
+    time2.text = `${addedHours}:${mins}`;
+    time2Shadow.text = `${addedHours}:${mins}`;
+    bboxTime = time2.getBBox().right;
+    ampm2.x = bboxTime + 5;
+    ampm2Shadow.x = bboxTime + 7;
+    ampm2.text = `${myAMPM}`;
+    ampm2Shadow.text = `${myAMPM}`; 
+ 
+    if (myDisp === 0) {
+      TZ2.text = `GMT Selected`;
+    } else {
+      if (myDisp > 0) {
+        if (halfCheck === 30) {
+          TZ2.text = `GMT +${myDisp}:30 Selected`;
+        } else {
+          TZ2.text = `GMT +${myDisp} Selected`;
+        }
+      } else {
+        if (halfCheck === 30) {
+          TZ2.text = `GMT ${myDisp}:30 Selected`;
+        } else {
+          TZ2.text = `GMT ${myDisp} Selected`;
+        }
+      }
+    }
 }
 
+// Uses formatDate function to display my date
+function myFormCal()  {
+  myCal.text = `${util.formatDate(new Date())}`
+} 
 
-// Function that uses the information from the import { today } from above and assigns it to the text element
-function updateSteps() {
-  let stepCt = today.adjusted.steps;
-  mySteps.text=stepCt;
-  myStepsShadow.text=stepCt;
+function loadScreen(loadColor, loadOffset, loadZone, whatTime) {
+  mainClock(loadZone, whatTime);
+  offsetClock(loadOffset, whatTime);
+  mySteps.style.display = "none";
+  myFeet.style.display = "none";  
+  myCal.style.display = "inline";  
+  myFormCal(); 
+}
+
+myCal.onclick = function(e) {
+  myCal.style.display = "none";
+  mySteps.text = today.adjusted.steps;
+  mySteps.style.display = "inline";
+//get x coord for mySteps here
   let bboxStep = mySteps.getBBox().right;
-  console.log(`bbox width information <${bboxStep}>`);
   myFeet.x = bboxStep + 5;
-  myFeetShadow.x = bboxStep + 7;
-}
-
-// Function to update fitness only items
-function updateFitness() {
-  //Update Active minutes info
-  let actMin = today.adjusted.activeMinutes;
-  myAct.text=actMin;
-  myActShadow.text=actMin; 
-  
-  let bboxAct = myAct.getBBox().right;
-  console.log(`bbox width information <${bboxAct}>`);
-  myActPic.x = bboxAct + 5;
-  myActPicShadow.x = bboxAct + 7;
-
-  //Update Calories burned info
-  let actCal = today.adjusted.calories;
-  myBurn.text = actCal;
-  myBurnShadow.text = actCal;
-  
-  let bboxCal = myBurn.getBBox().right;
-  console.log(`bbox width information <${bboxCal}>`);
-  myBurnPic.x = bboxCal + 5;
-  myBurnPicShadow.x = bboxCal + 7;
-}
-
-
-function updateBat(myOptions)  {
-  let level = battery.chargeLevel;
-  console.log(`bat charge <${level}>`);
-  console.log(`starting updateBat <${myOptions.batDisp}>`);
-  batFill.width = Math.floor(batFillWidth * level / 100);
-  if (myOptions.batDisp === "true" && batFill.width >= 6) {
-    console.log("batDisp = true");
-    if (batFill.width > 6) {
-      batt.style.display = "inline";
-      if (batFill.width < 11) {
-        batFill.style.fill = "yellow";
-      } else {
-      batFill.style.fill = "green";
-      }
-    }
+  let myDevice = device.modelName;
+  if (myDevice === "Ionic") {
+    myFeet.y = 120;
   } else {
-    batt.style.display = "none";
+    myFeet.y = 150;
   }
+  myFeet.style.display = "inline";  
 }
 
-//reset the screen when an option is changed
-function resetToSteps() {
-  myUTCTime.style.display = "none";
-  allBurn.style.display = "none";   
-  allAct.style.display = "none";
-  updateSteps();
-  allFeet.style.display = "inline"; 
-  fitID.text = "steps";
-  fitIDShadow.text = "steps";
-  allFitID.style.display = "inline";
+mySteps.onclick = function(e) {
+  mySteps.style.display = "none";
+  myFeet.style.display = "none";  
+  myCal.style.display = "inline";
 }
 
-function resetToClock(myOptions){
-  allBurn.style.display = "none";   
-  allAct.style.display = "none";
-  allFitID.style.display = "none";
-  allFeet.style.display = "none";
-  myUTCTime.style.display = "inline";
-  
-  if (myOptions.OffsetTime === undefined) {
-    myOptions.OffsetTime = 25
-  };
-  console.log("Sent to utcClock");
-  utcClock(myOptions);
-}
-
-//Begin the touches
-
-//If myUTC is touched, hide it and display steps
-myUTCLabel.onclick = function()  {
-  myUTCTime.style.display = "none";
-
-  //get a recent count.  Screen is only active for 5 seconds, so no need to ontiuously updated
-  updateSteps();
-  allFeet.style.display = "inline";
-  fitID.text = "steps";
-  fitIDShadow.text = "steps";
-  allFitID.style.display = "inline";
-}
-
-//if steps is touched cylce to the secondary display
-mySteps.onclick = function()  {
-  allFeet.style.display = "none";
-  if (myOptions.timeOrFit === "false") {
-    console.log("back to UTC");
-    resetToClock(myOptions);
-  } else {
-    updateFitness();
-    allFeet.style.display = "none";
-    allBurn.style.display = "inline";
-    fitID.text = "calories";
-    fitIDShadow.text = "calories";
-    allFitID.style.display = "inline";
-  }
-}
-
-myBurn.onclick = function() {
-  allBurn.style.display = "none";
-  allAct.style.display = "inline";
-  fitID.text = "active minutes";
-  fitIDShadow.text = "active minutes";
-}
-  
-myAct.onclick = function() {
-  allAct.style.display = "none";
-  //Get new steps and display them
-  updateSteps();
-  allFeet.style.display = "inline"
-  fitID.text = "steps";
-  fitIDShadow.text = "steps";
-}
-
-// Read all the different settings from file, apply them and save into myOptions
-function loadInfo(myOptions) {
-//function loadColor()
-  try { 
-    myOptions.color = fs.readFileSync("myColor.txt","ascii");
-    let loadColor = myOptions.color;
-    console.log("Orgional loadColor read " + loadColor);
-    if (loadColor !== undefined) {
-      myColor.style.fill = loadColor; 
-      console.log("loadColor entered on this try");
-    }
-  } catch (error) {
-    console.log("loadColor error " + error);
-    if (loadColor !== undefined) {
-      //on first run-through there are still quotes on the color
-      console.log("loadColor " + loadColor);
-      if (loadColor.substring(0) === '"') {
-        loadColor = util.myColor(loadColor);
-        console.log("Refined loadColor <" + loadColor + ">");
-      } else {
-        loadColor = "white";
-      }
-      myColor.style.fill = loadColor; 
-    }
-  }
-// loadTimeZone()
-  try {
-    myOptions.loadZone = fs.readFileSync("zoneCode.txt","ascii");   
-    if (myOptions.loadZone !== undefined) {
-      console.log(`new Timezone: <${myOptions.loadZone}>`);
-      myTZ.text = myOptions.loadZone;
-      myTZShadow.text = myOptions.loadZone;
-    }
-  } catch (error) {
-    console.log("No pre-set timezone " + error);
-      myTZ.text = "Unknown";
-      myTZShadow.text = "Unknown";
-  }         
-
-// loadOffset()
-  try{
-    myOptions.OffsetTime = util.stripQuotes(fs.readFileSync("offsetTime.txt","ascii")); 
-    if (myOptions.OffsetTime !== undefined) {
-      console.log(`new Offset: <${myOptions.OffsetTime}>`);
-    } else if (myOptions.OffsetTime === undefined) {
-      myOptions.OffsetTime = 25;
-    }  
-  } catch (error) {
-    console.log("No pre-set offset" + error);
-    myOptions.OffsetTime = 25; 
-  }
-//load battery display settings
-  try{
-    myOptions.batDisp = fs.readFileSync("batDisp.txt", "ascii");
-    if (myOptions.batDisp !== undefined) {
-      console.log(`batDisp file read: <${myOptions.batDisp}>`);
-    }
-  } catch (error) {
-      console.log("batDisp not read");
-  }
-//load second time or fitness display
-  try{
-    myOptions.timeOrFit = fs.readFileSync("timeOrFit.txt", "ascii");
-    if (myOptions.timeOrFit !== undefined) {
-      console.log(`timeOrFit file read: <${myOptions.timeOrFit}>`);
-    }
-  } catch (error) {
-    console.log("timeOrFit not read");
-  }
-  try{
-    myOptions.whatTime = fs.readFileSync("whatTime.txt", "ascii");
-    if (myOptions.whatTime !== undefined) {
-      console.log(`whatTime file read: <${myOptions.whatTime}>`);
-    }  
-  } catch (error) {
-      console.log("whatTime not read, assigned system");
-     if (preferences.clockDisplay === "24h"){
-       myOptions.whatTime = "false";
-     } else {
-       myOptions.whatTime = "true";
-     }
-  }
-  updateAll(myOptions);
-}
-
-inbox.onnewfile = () => {
-  let fileName;
-  do {
-    fileName = inbox.nextFile();
-    if (fileName) {
-      if (mySettings.bg && mySettings.bg !== "" && mySettings.bg !== "brushed.jpeg") {
-        fs.unlinkSync(mySettings.bg);
-      }
-      mySettings.bg = `/private/data/${fileName}`;
-      saveSettings();
-      applySettings();
-    }
-  } while (fileName);
-};
-
-messaging.peerSocket.onmessage = function (evt) {
-
-  console.log(`onmessage key = <${evt.data.key}>`);
-  console.log(`onmsg info = <${evt.data.newValue}>`);
-  switch (evt.data.key) {
-    case 'color':
-      let newInfo = util.myColor(evt.data.newValue);
-      fs.writeFileSync("myColor.txt",newInfo,"ascii");
-      console.log(`myColor file written <${newInfo}>`);
-      break;
-    case 'offsetTime':
-      let myTemp = JSON.parse(evt.data.newValue);
-      let newInfo = myTemp.values[0].value;
-      fs.writeFileSync("offsetTime.txt",newInfo,"ascii");
-      console.log(`offsetTime file written <${newInfo}>`);
-      break;
-    case 'zoneCode':
-      let newInfo = evt.data.newValue;
-      fs.writeFileSync("zoneCode.txt", newInfo, "ascii");
-      console.log(`zoneCode written <${newInfo}>`);
-      break;
-    case 'batDisp':
-      let newInfo = evt.data.newValue;
-      fs.writeFileSync("batDisp.txt", newInfo, "ascii");
-      console.log(`batDisplay written <${newInfo}>`); 
-      break;
-    case 'timeOrFit':
-      let newInfo = evt.data.newValue;
-      fs.writeFileSync("timeOrFit.txt", newInfo, "ascii");
-      console.log(`timeOrFit written <${newInfo}>`); 
-      break;
-    case 'whatTime':
-      let newInfo = evt.data.newValue;
-      fs.writeFileSync("whatTime.txt", newInfo, "ascii");
-      console.log(`whatTime written <${newInfo}>`);
-   }
-  updateSteps();
-  resetToSteps();
-  loadInfo(myOptions);
-};   
-
-function loadSettings() {
-  try {
-    mySettings = fs.readFileSync(SETTINGS_FILE, SETTINGS_TYPE);
-    } catch (error) {
-      mySettings = {bg: "brushed.jpeg"};
-      console.log("pic error " + error);
-    }
-    applySettings();
-  }
-
-function saveSettings() {
-  fs.writeFileSync(SETTINGS_FILE, mySettings, SETTINGS_TYPE);
-}
-
-function applySettings() {
-  if (mySettings.bg) {
-    imageBackground.image = mySettings.bg;
-  } else {
-    imageBackground.image = "brushed.jpeg";
-  }
-  display.on = true;
-}
-
-//loadInfo calls from file to load clock
-clock.ontick = () => updateAll(myOptions);
+//  This is where the "execution" part of the clock face starts
+clock.ontick = () => loadScreen(loadColor, loadOffset, loadZone, whatTime);

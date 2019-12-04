@@ -1,282 +1,136 @@
-.background {
+#background {
   viewport-fill: #444444;
+  width: 100%;
+  height: 100%;
 }
 
-#myUTCTime {
-  fill: white;
-}
-
-#myColor {
-  fill: white;
-}
-
-#allCal {
-  fill: white;
-}
-
-#allFeet {
-  fill: white;
-}
-#allAct {
-  fill: white;
-}
-
-#allBurn {
-  fill: white;
-}
-
-#allFitID {
-  fill: white;
-}
-
-#time {
-  font-size: 100;
+#time1 {
+  font-size: 65;
   font-family: System-Bold;
-  text-length: 32;
+  font-weight: regular;
   text-anchor: middle;
   x: 50%;
-  y: 28%;
+  y: 30%;
   fill: white;
+  text-length: 32;
 }
 
-#timeShadow {
-  font-size: 100;
+#time1Shadow {
+  font-size: 65;
   font-family: System-Bold;
-  text-length: 32;
+  font-weight: regular;
   text-anchor: middle;
   x: 50%+2;
-  y: 28%+2;
+  y: 30%+2;
   fill: black;
+  text-length: 32;
 }
 
-#myUTCLabelShadow {
-  font-size: 70;
+#time2 {
+  font-size: 50;
   font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%+2;
-  y: 85%+2;
-  fill: black;
-}
-
-#myUTCLabel {
-  font-size: 70;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
+  font-weight: regular;
   x: 50%;
   y: 85%;
   fill: white;
-}
-
-#myCalShadow {
-  font-size: 48;
-  font-family: System-Bold;
   text-length: 32;
   text-anchor: middle;
-  x: 50%+2;
-  y: 57%+2;
-  fill: black;
 }
 
-#myCal {
-  font-size: 48;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%;
-  y: 57%;
-  fill: white;
-}
 
-#myStepsShadow {
-  font-size: 64;
+#time2Shadow{
+  font-size: 50;
   font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
+  font-weight: regular;
   x: 50%+2;
   y: 85%+2;
   fill: black;
-}
-
-#mySteps {
-  font-size: 64;
-  font-family: System-Bold;
   text-length: 32;
   text-anchor: middle;
-  x: 50%;
-  y: 85%;
-  fill: white;
+ 
 }
-
-#lowerAMPMShadow {
-  font-size: 28;
+#myTZ {
+  font-size: 24;
   font-family: System-Bold;
-  text-length: 2;
-  text-anchor: start;
-  x: 87%+2;
-  y: 85%+2;
+  text-length: 20;
+  text-anchor: middle;
+  x: 50%;
+  y: 43%;
   fill: black;
 }
 
-
-#lowerAMPM {
-  font-size: 28;
-  font-family: System-Bold;
-  text-length: 2;
-  text-anchor: start;
-  x: 87%;
-  y: 85%;
-  fill: white;
-}
 
 #ampmShadow {
   font-size: 28;
   font-family: System-Bold;
   text-length: 2;
   text-anchor: start;
-  x: 87%+2;
-  y: 28%+2;
+  x:85%+2;
+  y:31%+2;
   fill: black;
+  display: none;
 }
-
 
 #ampm {
   font-size: 28;
   font-family: System-Bold;
   text-length: 2;
   text-anchor: start;
-  x: 87%;
-  y: 28%;
+  x:85%;
+  y:31%;
   fill: white;
+  display: none;
 }
 
-#myTZShadaow {
+#ampm2Shadow {
+  font-size: 28;
+  font-family: System-Bold;
+  text-length: 2;
+  text-anchor: start;
+  x:85%+2;
+  y:85%+2;
+  fill: black;
+  display: none;
+}
+
+#ampm2 {
+  font-size: 28;
+  font-family: System-Bold;
+  text-length: 2;
+  text-anchor: start;
+  x:85%;
+  y:85%;
+  fill: white;
+  display: none;
+}
+
+#TZ2 {
   font-size: 24;
   font-family: System-Bold;
-  text-length: 32;
+  text-length: 20;
   text-anchor: middle;
-  x: 50%+2;
-  y: 40%+2;
+  x: 50%;
+  y: 95%;
   fill: black;
-}
+  }
 
-#myTZ {
-  font-size: 24;
+#myCal {
+  font-size: 44;
   font-family: System-Bold;
   text-length: 32;
   text-anchor: middle;
   x: 50%;
-  y: 40%;
-  fill: white;
-}
-
-#myZShadow {
-  font-size: 24;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%+2;
-  y: 97%+2;
+  y: 60%;
   fill: black;
 }
 
-
-#myZ {
-  font-size: 24;
+#mySteps {
+  font-size: 44;
   font-family: System-Bold;
   text-length: 32;
   text-anchor: middle;
-  x: 50%;
-  y: 97%;
-  fill: white;
-}
-
-#batBody{
-  y:4;
-  x:2;
-  height: 16;
-  width: 22;
-  opacity: 0.8;
-}
-
-#batHead{
-  y:8;
-  x:25;
-  height: 8;
-  width: 3;
-  fill: black;
-  opacity: 0.7;
-}
-
-#batFill{
-  y: 6;
-  height: 12;
-  x:4;
-  width: 19;
-  fill:black;
-  opacity: 0.7;
-}
-
-#myBurnShadow {
-  font-size: 64;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%+2;
-  y: 85%+2;
+  x: 45%;
+  y: 60%;
   fill: black;
 }
-
-#myBurn {
-  font-size: 64;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%;
-  y: 85%;
-  fill: white;
-}
-
-#myActShadow {
-  font-size: 64;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%+2;
-  y: 85%+2;
-  fill: black;
-}
-
-#myAct {
-  font-size: 64;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%;
-  y: 85%;
-  fill: white;
-}
-
-#fitIDShadow{
-  font-size: 24;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%+1;
-  y: 98%+1;
-  fill: black;  
-}
-
-#fitID{
-  font-size: 24;
-  font-family: System-Bold;
-  text-length: 32;
-  text-anchor: middle;
-  x: 50%;
-  y: 98%;
-  fill: white;  
-}
-
-
 
