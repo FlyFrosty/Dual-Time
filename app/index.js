@@ -236,6 +236,7 @@ function offsetClock(loadOffset, whatTime) {
   let UTCHours = today.getUTCHours(); 
   let myAMPM;  
   let offsetHours = Number(loadOffset);
+  let negTime = false;
   let myDevice = device.modelName;
   
   let bboxTime;
@@ -248,10 +249,15 @@ function offsetClock(loadOffset, whatTime) {
     offsetHours = 0;
   }
   
+  //See if it is a positive or negative offset
+  if (offsetHours < 0) {
+    negTime = true;
+  }
+  
   console.log(`UTC Hours <${UTCHours}>`);
   console.log(`offsetHours <${offsetHours}>`);
-
-  if (offsetHours === 5.5 || offsetHours === 4.5 || offsetHours === 9.5 || offsetHours === 3.5) {
+  
+  if (offsetHours !== parseInt(offsetHours)) {
     halfCheck = 30;
     console.log("loadOffset ends in 5");
   } else {
@@ -261,17 +267,27 @@ function offsetClock(loadOffset, whatTime) {
    
   offsetHours = parseInt(offsetHours);
   console.log(`offsetHours parseInt <${offsetHours}>`);
+  
   let myDisp = offsetHours;
   
   if (halfCheck === 30) {
-    if (mins < 30) {
-      mins = mins + halfCheck;
+    if (negTime === false) {
+      if (mins < 30) {
+        mins = mins + halfCheck;
+      } else {
+        mins = mins - halfCheck;
+        offsetHours = offsetHours + 1;
+      }
     } else {
-      mins = mins - halfCheck;
-      offsetHours = offsetHours + 1;
+      if (mins >= 30) {
+        mins = mins - halfCheck;
+      } else {
+        mins = mins + halfCheck;
+        offsetHours = offsetHours - 1;
+      }
     }
-  }
-  
+  }  
+ 
   mins = util.zeroPad(mins);
   
   let addedHours = offsetHours + UTCHours; //this will be the display hours variable
@@ -393,3 +409,29 @@ mySteps.onclick = function(e) {
 
 //  This is where the "execution" part of the clock face starts
 clock.ontick = () => loadScreen(loadColor, loadOffset, loadZone, whatTime);
+
+/*
+function showSomething(){
+  // does the device support AOD, and can I use it?
+  if (display.aodAvailable && me.permissions.granted("access_aod")) {
+    // tell the system we support AOD
+    display.aodAllowed = true;
+
+    // respond to display change events
+    display.addEventListener("change", () => {
+      // Is AOD inactive and the display is on?
+      if (!display.aodActive && display.on) {
+        loadScreen(loadColor, loadOffset, loadZone, whatTime);
+      } else {
+        //load always on clock
+        imageBackground.display = "none";
+        time1.style.fill = "white";
+        time.text = ("0" + evt.date.getHours()).slice(-2) + ":" +
+                      ("0" + evt.date.getMinutes()).slice(-2) + ":" +
+                      ("0" + evt.date.getSeconds()).slice(-2);
+      }
+    }
+    );
+  }
+}
+*/
